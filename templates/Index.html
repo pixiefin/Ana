@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Synthesis</title>
+</head>
+<body>
+    <h1>Text to Speech</h1>
+    <input type="text" id="text-input" placeholder="Enter text here">
+    <button onclick="convertTextToSpeech()">Convert to Speech</button>
+    <audio id="audio-output" controls></audio>
+
+    <script>
+        async function convertTextToSpeech() {
+            const textInput = document.getElementById('text-input').value;
+            const response = await fetch('http://127.0.0.1:5000/speak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: textInput })
+            });
+
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioOutput = document.getElementById('audio-output');
+                audioOutput.src = audioUrl;
+                audioOutput.play();
+            } else {
+                alert('Failed to convert text to speech');
+            }
+        }
+    </script>
+</body>
+</html>
