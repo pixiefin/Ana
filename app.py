@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, jsonify
 from gtts import gTTS
 import os
 
@@ -18,8 +18,13 @@ def speak():
     audio_file = "speech.mp3"
     tts.save(audio_file)
 
-    # Send the audio file as a response
-    return send_file(audio_file, mimetype='audio/mpeg')
+    # Create a JSON response including the text and the audio file
+    response = {
+        'text': text,
+        'audio_file': os.path.abspath(audio_file)
+    }
+
+    return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True)
