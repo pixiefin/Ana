@@ -1,37 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speech Synthesis</title>
+    <title>TTS Vikas Server</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script type="text/javascript">
+
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var socket = io();
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            socket.on('connect', function() {
+                console.log('Connected to server');
+            }); 
+            socket.on('audio_event', function(msg) {
+                console.log('Audio received from Server: ' + msg);
+                handleAudio(msg);
+            });
+            socket.on('text_event', function(msg) {
+                console.log('Text received from Server: ' + msg);
+                handleText(msg);
+            });
+            socket.on('disconnect', function() {
+                console.log('Disconnected from server');
+            });
+        });
+
+        function handleText(text) {
+            console.log('Word received from Server: ' + text);
+            const audioText = document.getElementById("audio-text");
+            audioText.value = text
+        }
+
+        async function handleAudio(bytes) {
+            
+            const audioCtx = new AudioContext();
+            const audioBuffer = await audioCtx.decodeAudioData(bytes);
+
+            const source = audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioCtx.destination);
+            source.start();
+        }
+
+        function sendMessage() {
+            var msg = document.getElementById('message').value;
+            socket.send(msg);
+        }
+
+        
+    </script>
 </head>
 <body>
-    <h1>Text to Speech</h1>
-    <input type="text" id="text-input" placeholder="Enter text here">
-    <button onclick="convertTextToSpeech()">Convert to Speech</button>
-    <audio id="audio-output" controls></audio>
-
-    <script>
-        async function convertTextToSpeech() {
-            const textInput = document.getElementById('text-input').value;
-            const response = await fetch('http://127.0.0.1:5000/speak', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ text: textInput })
-            });
-
-            if (response.ok) {
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                const audioOutput = document.getElementById('audio-output');
-                audioOutput.src = audioUrl;
-                audioOutput.play();
-            } else {
-                alert('Failed to convert text to speech');
-            }
-        }
-    </script>
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+    <br>
+    <br>
+    <h2>Word For Audio : </h2>
+    <input type="text" id="audio-text">
 </body>
 </html>
