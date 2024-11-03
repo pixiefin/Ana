@@ -53,4 +53,4 @@ def processMessage(msg):
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True, port=8083)
+    socketio.run(app, host='0.0.0.0', debug=True, allow_unsafe_werkzeug=True, port=9089)
